@@ -26,7 +26,8 @@ from dash_extensions.snippets import send_data_frame
 
 
 #import re
-# from flask_caching import Cache
+# from flask import Flask, request
+from flask_caching import Cache
 
 
 # from pytrends.request import TrendReq
@@ -85,23 +86,36 @@ def load_data(begin_date, end_date, words=[], debug=False):
     
     words = cbyz.conv_to_list(words)
     
-
-    # Pytrend .....
     
-    if debug == False:
+    # Pytrend .....
+    global trend_words, trend_data    
+    
+    if 'trend_data' not in globals() or debug == False:
+        
+        print(words)
+        
         trend_words = words
         trend_data = cbyz.pytrends_multi(begin_date=begin_date, 
                                          end_date=end_date, 
                                          chunk=180, unit='d',
                                          words=words, hl='zh-TW', geo='TW')
         
-        return trend_words, trend_data
-        
+        # return trend_words, trend_data
+
 
 def master():
     '''
     主工作區
     '''
+    
+    global submit_clicks, download_clicks
+    submit_clicks = 0
+    download_clicks = 0
+    
+    
+    global trend_words, trend_data
+    trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
+    trend_words = []
     
     return ''
 
@@ -117,23 +131,17 @@ def check():
 
 # %% Application ----
 
-
-# Iniitialize
-# trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-# trend_words = []    
-
-
 master()
 app = dash.Dash()
 
 
-# if local == False:
-#     cache = Cache(app.server, config={
-#         # try 'filesystem' if you don't want to setup redis
-#         'CACHE_TYPE': 'redis',
-#         'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
-#     })
-#     app.config.suppress_callback_exceptions = True
+if local == False:
+    cache = Cache(app.server, config={
+        # try 'filesystem' if you don't want to setup redis
+        'CACHE_TYPE': 'redis',
+        'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
+    })
+    app.config.suppress_callback_exceptions = True
     
 
 
@@ -144,121 +152,84 @@ colors = {
 }
 
 
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+file_path = path_temp_user + '/file_20210607_221318.csv'
+
 
 date_picker = {
     'display': 'black'    
 }
 
 
-df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
-
-
-
 app.layout = \
     html.Div([
         html.Div(id='debug'),
-        dcc.Store(id='df_memory', data=df_memory_dict),
 
         dcc.DatePickerRange(id='calendar', display_format='Y-M-D', 
                             style=date_picker),
         dcc.Input(id="word_input", type="text", placeholder=""),
-        html.Button('查詢', id='submit_btn', n_clicks=0, value=0),
+        html.Button('查詢', id='submit_btn', n_clicks=0),
         
-        html.Button('下載', id='download_btn', n_clicks=0, value=0),   
+        html.Button('下載', id='download_btn', n_clicks=0),   
         Download(id="download"),
         
         
-        # dcc.Graph(id='line_chart'),
         html.Div(id="line_chart"),
     ],  
 )
 
 
 
-# Bug, 加這個output時會出錯
-
-
 @app.callback(
     [Output('line_chart', 'children'),
-      Output('debug', 'children'),
-      Output('submit_btn', 'value'),
-      Output('df_memory', 'data'),
+      Output('debug', 'children')
       ],
     [Input('calendar', 'start_date'),
      Input('calendar', 'end_date'),
      Input('word_input', 'value'),
-     Input('submit_btn', 'n_clicks'),
-     Input('submit_btn', 'value')
+     Input('submit_btn', 'n_clicks')
       ]    
 )
 
 
 
-def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
+def update_output(begin_date, end_date, words, _submit_clicks):
 
     # 1. Add Loading icon
     
     
+    global trend_data, trend_wods, submit_clicks
     
-    # print(_submit_clicks)
-    # if submit_clicks == 0:
-    
-    #     trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-    #     trend_words = []    
 
     # words = ['疫苗', '確診', '陳時中', '家樂福', '大潤發', 'Uber Eats', 'Foodpanda',
     #           '全聯', '愛買', '全家', '好市多', '封城', '台股', '比特幣', '美股']
     
-    return_switch = False
     
     if begin_date != None and end_date != None:
         
-        if _submit_clicks > _submit_value and words != None:
+        begin_date_lite = cbyz.date_simplify(begin_date)
+        end_date_lite = cbyz.date_simplify(end_date)
+    
+        if _submit_clicks > submit_clicks and words != None:
             
-            begin_date_lite = cbyz.date_simplify(begin_date)
-            end_date_lite = cbyz.date_simplify(end_date)            
             
-            # words = words.split(', ')
+            print(begin_date_lite, end_date_lite)
+            
             words = words.split(',')
-            
-            trend_words, trend_data = load_data(begin_date=begin_date_lite, 
-                      end_date=end_date_lite, 
-                      words=words, debug=False)
-        
-            # trend_data = trend_data.to_dict()
-        
-        
-            submit_clicks = _submit_clicks
-            submit_value = _submit_clicks
-            
-            switch = True
             print(words)
-        
-    # else:
-    #     trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-    #     trend_words = []    
-        
-
-    # if not return_switch:
-    if 'trend_data' not in locals():
-        trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]})
-        trend_words = []    
-
-
-    if 'submit_value' not in locals():
-        submit_value = _submit_value
+            
+            load_data(begin_date=begin_date_lite, end_date=end_date_lite, 
+                      words=words, debug=False)
+            
+            submit_clicks = _submit_clicks
+            
+        # else:
+        #     words, data = load_data(begin_date=begin_date_lite, 
+        #                             end_date=end_date_lite, 
+        #                             words=words, debug=True)
 
 
-    df_memofy_data = trend_data.to_dict()
 
 
-    # 待優化 .......
-    # 參考share data between callback中的Output('memory-graph', 'figure'),
-    # https://dash.plotly.com/dash-core-components/store
-    
-    
-    # Bug, data1可能為None
     data1 = [{'x': trend_data[trend_data['VARIABLE']==i]['DATE'],
               'y': trend_data[trend_data['VARIABLE']==i]['VALUE'],
               'type': 'line',
@@ -266,18 +237,19 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
               } for i in trend_words]
               
     
-    plot =  dcc.Graph(id='trend_plot',
-                      figure={
-                          'data': data1,
-                          'layout': {
-                              'plot_bgcolor': colors['background'],
-                              'paper_bgcolor': colors['background'],
-                              'font': {
-                                  'color': colors['text']
-                                  },
-                              }
-                          },
-                      )
+    plot =  dcc.Graph(
+                            id='trend_plot',
+                            figure={
+                                'data': data1,
+                                'layout': {
+                                    'plot_bgcolor': colors['background'],
+                                    'paper_bgcolor': colors['background'],
+                                    'font': {
+                                        'color': colors['text']
+                                    },
+                                }
+                            },
+                        )
 
     figure = [plot]
 
@@ -286,44 +258,42 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
     # debug_dropdown = '_'.join(dropdown_value)
 
 
-    if not return_switch:
-        pass
-        
-    return figure, '', submit_value, data1
+    return figure, ''
+
 
 
 
 
 @app.callback(
-    [Output('download', 'data'),
-     Output('download_btn', 'value')
-    ],
-    [Input('download_btn', 'n_clicks'),
-     Input('download_btn', 'value')
-     ]    
+    Output('download', 'data'),
+    [Input('download_btn', 'n_clicks')]    
 )
 
 
-def donwload_file(_download_clicks, _download_value):
+def donwload_file(_download_clicks):
 
 
     # 1. 20210607 - Download csv, not published yet
     # https://dash.plotly.com/dash-core-components/download    
     
+    global trend_data, download_clicks
 
-    if _download_clicks > _download_value:
-        
-        _download_value = _download_clicks
+    if _download_clicks > download_clicks:
 
-        time_serial = cbyz.get_time_serial(with_time=True)
+    # df = pd.DataFrame({'a': [1, 2, 3, 4], 'b': [2, 1, 5, 6], 'c': ['x', 'x', 'y', 'y']})        
         
-        send_frame = \
-            send_data_frame(trend_data.to_csv, 
-                            "goole_trends_enhanced" + time_serial \
-                            + ".csv", index=False)    
+    #     serial = cbyz.get_time_serial(with_time=True)
+    #     # trend_data.to_csv(path_user_temp + '/file_' + serial + '.csv',
+    #     #                   index=False, encoding='utf-8-sig')
+        
+    #     # file_path = path_temp_user + '/file_20210607_221318.csv'
+        
+    #     # dcc.send_data_frame(trend_data.to_csv, 
+    #     #                     path_temp_user + '/file_' + serial + '.csv')
+    #     print('download')    
+    #     download_clicks = _download_clicks    
     
-    
-        return _download_value, send_frame
+        return send_data_frame(trend_data.to_csv, "mydf.csv", index=False)
 
 
 

@@ -8,46 +8,46 @@ arrow==0.13.1
 astroid==2.5
 astunparse==1.6.3
 async-generator==1.10
-atomicwrites==1.4.0
-attrs==21.2.0
-autopep8==1.5.6
-Babel==2.9.1
-backcall==0.2.0
-binaryornot==0.4.4
-black==19.10b0
-bleach==3.3.0
-Brotli==1.0.9
-brotlipy==0.7.0
-cachetools==4.2.1
-certifi==2021.5.30
-cffi==1.14.5
-chardet==4.0.0
-click==8.0.1
-cloudpickle==1.6.0
-colorama==0.4.4
-cookiecutter==1.7.2
-cryptography==3.4.7
-dash==1.20.0
-dash-core-components==1.16.0
-dash-extensions==0.0.55
-dash-html-components==1.1.3
-dash-renderer==1.9.1
-dash-table==4.11.3
-decorator==5.0.9
-defusedxml==0.7.1
-diff-match-patch==20200713
-docutils==0.17.1
-entrypoints==0.3
-flake8==3.9.0
-Flask==2.0.1
-Flask-Caching==1.10.1
-Flask-Compress==1.9.0
-flatbuffers==1.12
-future==0.18.2
-gast==0.3.3
-google-auth==1.25.0
-google-pasta==0.2.0
-grpcio==1.32.0
+# atomicwrites==1.4.0
+# attrs==21.2.0
+# autopep8==1.5.6
+# Babel==2.9.1
+# backcall==0.2.0
+# binaryornot==0.4.4
+# black==19.10b0
+# bleach==3.3.0
+# Brotli==1.0.9
+# brotlipy==0.7.0
+# cachetools==4.2.1
+# certifi==2021.5.30
+# cffi==1.14.5
+# chardet==4.0.0
+# click==8.0.1
+# cloudpickle==1.6.0
+# colorama==0.4.4
+# cookiecutter==1.7.2
+# cryptography==3.4.7
+# dash==1.20.0
+# dash-core-components==1.16.0
+# dash-extensions==0.0.55
+# dash-html-components==1.1.3
+# dash-renderer==1.9.1
+# dash-table==4.11.3
+# decorator==5.0.9
+# defusedxml==0.7.1
+# diff-match-patch==20200713
+# docutils==0.17.1
+# entrypoints==0.3
+# flake8==3.9.0
+# Flask==2.0.1
+# Flask-Caching==1.10.1
+# Flask-Compress==1.9.0
+# flatbuffers==1.12
+# future==0.18.2
+# gast==0.3.3
+# google-auth==1.25.0
+# google-pasta==0.2.0
+# grpcio==1.32.0
 # idna==2.10
 # imagesize==1.2.0
 # importlib-metadata==3.10.0
