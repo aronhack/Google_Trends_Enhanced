@@ -7,6 +7,12 @@ Created on Sat Nov 14 17:48:32 2020
 """
 
 
+
+# Worklist
+# 1. Add loading icon
+
+
+
 # -*- coding: utf-8 -*-
 import os
 
@@ -25,15 +31,8 @@ from dash_extensions import Download
 from dash_extensions.snippets import send_data_frame
 
 
-#import re
-# from flask_caching import Cache
-
-
-# from pytrends.request import TrendReq
-
-
 local = False
-local = True
+# local = True
 
 
 # Path .....
@@ -118,23 +117,10 @@ def check():
 # %% Application ----
 
 
-# Iniitialize
-# trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-# trend_words = []    
-
-
-master()
+# Iniitialize ......
 app = dash.Dash()
+df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
 
-
-# if local == False:
-#     cache = Cache(app.server, config={
-#         # try 'filesystem' if you don't want to setup redis
-#         'CACHE_TYPE': 'redis',
-#         'CACHE_REDIS_URL': os.environ.get('REDIS_URL', '')
-#     })
-#     app.config.suppress_callback_exceptions = True
-    
 
 
 # Style ......
@@ -144,15 +130,26 @@ colors = {
 }
 
 
+
+# Style ......
 # app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+
 date_picker = {
-    'display': 'black'    
-}
+    'display': 'block'    
+    }
 
+word_input_style = {
+    'height': '35px',
+    'width': '40%',
+    'display': 'block',
+    'margin': '16px 0'
+    }
 
-df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
-
+btn_style = {
+    'margin-right': '10px',
+    'margin-bottom': '16px'
+    }
 
 
 app.layout = \
@@ -162,14 +159,18 @@ app.layout = \
 
         dcc.DatePickerRange(id='calendar', display_format='Y-M-D', 
                             style=date_picker),
-        dcc.Input(id="word_input", type="text", placeholder=""),
-        html.Button('查詢', id='submit_btn', n_clicks=0, value=0),
         
-        html.Button('下載', id='download_btn', n_clicks=0, value=0),   
+        dcc.Input(id="word_input", type="text", 
+                  placeholder="使用逗號分隔關鍵字，如「台股,美股,比特幣」",
+                  style=word_input_style),
+        
+        html.Button('查詢', id='submit_btn', 
+                    n_clicks=0, value=0, style=btn_style),
+        
+        html.Button('下載', id='download_btn', 
+                    n_clicks=0, value=0, style=btn_style),
+        
         Download(id="download"),
-        
-        
-        # dcc.Graph(id='line_chart'),
         html.Div(id="line_chart"),
     ],  
 )
@@ -189,26 +190,24 @@ app.layout = \
      Input('calendar', 'end_date'),
      Input('word_input', 'value'),
      Input('submit_btn', 'n_clicks'),
-     Input('submit_btn', 'value')
+     Input('submit_btn', 'value'),
+     Input('df_memory', 'data'),
       ]    
 )
 
 
 
-def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
-
+def update_output(begin_date, end_date, words, _submit_clicks, _submit_value, 
+                  _df_memory):
+    
     # 1. Add Loading icon
-    
-    
-    
-    # print(_submit_clicks)
-    # if submit_clicks == 0:
-    
-    #     trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-    #     trend_words = []    
 
-    # words = ['疫苗', '確診', '陳時中', '家樂福', '大潤發', 'Uber Eats', 'Foodpanda',
-    #           '全聯', '愛買', '全家', '好市多', '封城', '台股', '比特幣', '美股']
+    trend_data_dict = _df_memory
+    
+
+    # begin_date_lite = 20210301
+    # end_date_lite = 20210310
+    # words = ['台股', '比特幣', '美股']
     
     return_switch = False
     
@@ -226,7 +225,13 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
                       end_date=end_date_lite, 
                       words=words, debug=False)
         
-            # trend_data = trend_data.to_dict()
+            
+            trend_data_dict = \
+                [{'x': trend_data[trend_data['VARIABLE']==i]['DATE'],
+                  'y': trend_data[trend_data['VARIABLE']==i]['VALUE'],
+                  'type': 'line',
+                  'name': i,
+                  } for i in trend_words]            
         
         
             submit_clicks = _submit_clicks
@@ -235,22 +240,11 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
             switch = True
             print(words)
         
-    # else:
-    #     trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]}) 
-    #     trend_words = []    
-        
-
-    # if not return_switch:
-    if 'trend_data' not in locals():
-        trend_data = pd.DataFrame({'DATE':[], 'VALUE':[]})
-        trend_words = []    
 
 
     if 'submit_value' not in locals():
         submit_value = _submit_value
 
-
-    df_memofy_data = trend_data.to_dict()
 
 
     # 待優化 .......
@@ -258,17 +252,9 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
     # https://dash.plotly.com/dash-core-components/store
     
     
-    # Bug, data1可能為None
-    data1 = [{'x': trend_data[trend_data['VARIABLE']==i]['DATE'],
-              'y': trend_data[trend_data['VARIABLE']==i]['VALUE'],
-              'type': 'line',
-              'name': i,
-              } for i in trend_words]
-              
-    
     plot =  dcc.Graph(id='trend_plot',
                       figure={
-                          'data': data1,
+                          'data': trend_data_dict,
                           'layout': {
                               'plot_bgcolor': colors['background'],
                               'paper_bgcolor': colors['background'],
@@ -281,15 +267,7 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
 
     figure = [plot]
 
-
-    # # Debug
-    # debug_dropdown = '_'.join(dropdown_value)
-
-
-    if not return_switch:
-        pass
-        
-    return figure, '', submit_value, data1
+    return figure, '', submit_value, trend_data_dict
 
 
 
@@ -299,31 +277,38 @@ def update_output(begin_date, end_date, words, _submit_clicks, _submit_value):
      Output('download_btn', 'value')
     ],
     [Input('download_btn', 'n_clicks'),
-     Input('download_btn', 'value')
+     Input('download_btn', 'value'), 
+     Input('df_memory', 'data'),
      ]    
 )
 
 
-def donwload_file(_download_clicks, _download_value):
-
-
+def donwload_file(_download_clicks, _download_value, _df_memory):
     # 1. 20210607 - Download csv, not published yet
     # https://dash.plotly.com/dash-core-components/download    
     
-
     if _download_clicks > _download_value:
         
         _download_value = _download_clicks
-
         time_serial = cbyz.get_time_serial(with_time=True)
         
+        # Convert nested dict to dataframe ......
+        results = pd.DataFrame()
+        
+        for i in _df_memory:
+            temp = pd.DataFrame(i)
+            results = results.append(temp)
+        
+        results.columns = ['Date', 'Value', 'Type', 'Word']
+        results = results[['Date', 'Word', 'Value']]
+
+        # Export ......        
         send_frame = \
-            send_data_frame(trend_data.to_csv, 
+            send_data_frame(results.to_excel, 
                             "goole_trends_enhanced" + time_serial \
-                            + ".csv", index=False)    
+                            + ".xlsx", index=False) 
     
-    
-        return _download_value, send_frame
+        return send_frame, _download_value
 
 
 
