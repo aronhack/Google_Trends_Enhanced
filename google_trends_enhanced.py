@@ -164,10 +164,10 @@ app.layout = \
                   placeholder="使用逗號分隔關鍵字，如「台股,美股,比特幣」",
                   style=word_input_style),
         
-        html.Button('查詢', id='submit_btn', 
+        html.Button('Search', id='submit_btn', 
                     n_clicks=0, value=0, style=btn_style),
         
-        html.Button('下載', id='download_btn', 
+        html.Button('Download', id='download_btn', 
                     n_clicks=0, value=0, style=btn_style),
         
         Download(id="download"),
