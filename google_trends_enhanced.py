@@ -6,19 +6,14 @@ Created on Sat Nov 14 17:48:32 2020
 @author: Aron
 """
 
-
-
 # Worklist
 # 1. Add loading icon
 
 
-
 # -*- coding: utf-8 -*-
-import os
-
 import pandas as pd
 import sys
-import datetime
+import time
 
 import dash
 import dash_core_components as dcc
@@ -32,7 +27,7 @@ from dash_extensions.snippets import send_data_frame
 import plotly.graph_objs as go
 
 local = False
-local = True
+# local = True
 
 
 # Path .....
@@ -56,7 +51,6 @@ for i in path_codebase:
 
 import codebase_yz as cbyz
 import arsenal as ar
-
 
 
 # 自動設定區 -------
@@ -98,23 +92,20 @@ def load_data(begin_date, end_date, words=[], debug=False):
         
 
 
-
-
 # %% Application ----
 
 
+
+# Date Picker Stuck issues
+# https://community.plotly.com/t/style-of-datepickerrange-seems-screwed-up-in-the-demo/22590
+
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+
+
 # Iniitialize ......
-app = dash.Dash()
-df_memory = pd.DataFrame({'DATE':[], 'VALUE':[]})
-df_memory_dict = df_memory.to_dict()
-
-
-# fig = go.Figure(go.Scatter(x=df_memory['DATE'], 
-#                    y=df_memory['VALUE'],
-#                    mode='lines',
-#                    name=''))
-
-
+# app = dash.Dash()
+app = dash.Dash(external_stylesheets=external_stylesheets)
+df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
 
 
 
@@ -125,9 +116,7 @@ colors = {
 }
 
 
-
-# Style ......
-
+# CSS ......
 date_picker = {
     'display': 'block'    
     }
@@ -151,7 +140,7 @@ app.layout = \
         dcc.Store(id='df_memory', data=df_memory_dict),
 
         dcc.DatePickerRange(id='calendar', display_format='Y-M-D', 
-                            style=date_picker),
+                            with_portal=True, style=date_picker),
         
         dcc.Input(id="word_input", type="text", 
                   placeholder="使用逗號分隔關鍵字，如「台股,美股,比特幣」",
@@ -164,7 +153,12 @@ app.layout = \
                     n_clicks=0, value=0, style=btn_style),
         
         Download(id="download"),
-        dcc.Graph(id="graph"),
+        
+        dcc.Loading(
+            id="loading-1",
+            type="default",
+            children=dcc.Graph(id="graph")
+        ),        
         
     ],  
 )
@@ -225,6 +219,7 @@ def update_output(_submit_clicks, begin_date, end_date, words):
         fig.add_trace(trace)
         
 
+    time.sleep(1)
     return fig, trend_data_dict
 
 
