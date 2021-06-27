@@ -24,15 +24,15 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 # import dash_daq as daq
-from dash.dependencies import Input, Output
-
-
+from dash.dependencies import Input, Output, State
+from dash.exceptions import PreventUpdate
 from dash_extensions import Download
 from dash_extensions.snippets import send_data_frame
 
+import plotly.graph_objs as go
 
 local = False
-# local = True
+local = True
 
 
 # Path .....
@@ -97,20 +97,6 @@ def load_data(begin_date, end_date, words=[], debug=False):
         return trend_words, trend_data
         
 
-def master():
-    '''
-    主工作區
-    '''
-    
-    return ''
-
-
-
-def check():
-    '''
-    資料驗證
-    '''    
-    return ''
 
 
 
@@ -119,11 +105,20 @@ def check():
 
 # Iniitialize ......
 app = dash.Dash()
-df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
+df_memory = pd.DataFrame({'DATE':[], 'VALUE':[]})
+df_memory_dict = df_memory.to_dict()
+
+
+# fig = go.Figure(go.Scatter(x=df_memory['DATE'], 
+#                    y=df_memory['VALUE'],
+#                    mode='lines',
+#                    name=''))
 
 
 
-# Style ......
+
+
+# %% Style ------
 colors = {
     'background': '#f5f5f5',
     'text': '#303030'
@@ -132,8 +127,6 @@ colors = {
 
 
 # Style ......
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-
 
 date_picker = {
     'display': 'block'    
@@ -171,144 +164,113 @@ app.layout = \
                     n_clicks=0, value=0, style=btn_style),
         
         Download(id="download"),
-        html.Div(id="line_chart"),
+        dcc.Graph(id="graph"),
+        
     ],  
 )
 
 
 
-# Bug, 加這個output時會出錯
-
+# %% Callback ------
 
 @app.callback(
-    [Output('line_chart', 'children'),
-      Output('debug', 'children'),
-      Output('submit_btn', 'value'),
-      Output('df_memory', 'data'),
-      ],
-    [Input('calendar', 'start_date'),
-     Input('calendar', 'end_date'),
-     Input('word_input', 'value'),
-     Input('submit_btn', 'n_clicks'),
-     Input('submit_btn', 'value'),
-     Input('df_memory', 'data'),
-      ]    
+    Output('graph', 'figure'),
+    Output('df_memory', 'data'),
+    Input('submit_btn', 'n_clicks'),
+    State('calendar', 'start_date'),
+    State('calendar', 'end_date'),
+    State('word_input', 'value')
 )
 
 
 
-def update_output(begin_date, end_date, words, _submit_clicks, _submit_value, 
-                  _df_memory):
+def update_output(_submit_clicks, begin_date, end_date, words):
     
     # 1. Add Loading icon
+    
+    if begin_date == None or end_date == None or words == None:
+        raise PreventUpdate
 
-    trend_data_dict = _df_memory
+       
+    # Query        
+    begin_date_lite = cbyz.date_simplify(begin_date)
+    end_date_lite = cbyz.date_simplify(end_date)            
     
+    # words = words.split(', ')
+    words = words.split(',')
+    
+    trend_words, trend_data = load_data(begin_date=begin_date_lite, 
+                                        end_date=end_date_lite, 
+                                        words=words, debug=False)
 
-    # begin_date_lite = 20210301
-    # end_date_lite = 20210310
-    # words = ['台股', '比特幣', '美股']
+    # Cache ......
+    trend_data_dict = \
+        [{'date': trend_data[trend_data['VARIABLE']==i]['DATE'],
+          'value': trend_data[trend_data['VARIABLE']==i]['VALUE'],
+          'type': 'line',
+          'name': i,
+          } for i in trend_words]            
+
+  
+    # Figure ......
+    fig = go.Figure()
     
-    return_switch = False
-    
-    if begin_date != None and end_date != None:
-        
-        if _submit_clicks > _submit_value and words != None:
-            
-            begin_date_lite = cbyz.date_simplify(begin_date)
-            end_date_lite = cbyz.date_simplify(end_date)            
-            
-            # words = words.split(', ')
-            words = words.split(',')
-            
-            trend_words, trend_data = load_data(begin_date=begin_date_lite, 
-                      end_date=end_date_lite, 
-                      words=words, debug=False)
-        
-            
-            trend_data_dict = \
-                [{'x': trend_data[trend_data['VARIABLE']==i]['DATE'],
-                  'y': trend_data[trend_data['VARIABLE']==i]['VALUE'],
-                  'type': 'line',
-                  'name': i,
-                  } for i in trend_words]            
-        
-        
-            submit_clicks = _submit_clicks
-            submit_value = _submit_clicks
-            
-            switch = True
-            print(words)
+    for w in trend_words:
+        temp_date = trend_data[trend_data['VARIABLE']==w]
+        trace = go.Scatter(x=temp_date['DATE'], 
+                           y=temp_date['VALUE'],
+                           mode='lines',
+                           name=w)
+
+        fig.add_trace(trace)
         
 
-
-    if 'submit_value' not in locals():
-        submit_value = _submit_value
+    return fig, trend_data_dict
 
 
-
-    # 待優化 .......
-    # 參考share data between callback中的Output('memory-graph', 'figure'),
-    # https://dash.plotly.com/dash-core-components/store
-    
-    
-    plot =  dcc.Graph(id='trend_plot',
-                      figure={
-                          'data': trend_data_dict,
-                          'layout': {
-                              'plot_bgcolor': colors['background'],
-                              'paper_bgcolor': colors['background'],
-                              'font': {
-                                  'color': colors['text']
-                                  },
-                              }
-                          },
-                      )
-
-    figure = [plot]
-
-    return figure, '', submit_value, trend_data_dict
-
-
+# .................
 
 
 @app.callback(
-    [Output('download', 'data'),
-     Output('download_btn', 'value')
-    ],
-    [Input('download_btn', 'n_clicks'),
-     Input('download_btn', 'value'), 
-     Input('df_memory', 'data'),
-     ]    
+    Output('download', 'data'),
+    Input('download_btn', 'n_clicks'),
+    State('df_memory', 'data'),
+    prevent_initial_call=True,        
 )
 
 
-def donwload_file(_download_clicks, _download_value, _df_memory):
+def donwload_file(_download_clicks, _df_memory):
     # 1. 20210607 - Download csv, not published yet
     # https://dash.plotly.com/dash-core-components/download    
     
-    if _download_clicks > _download_value:
+    # if _download_clicks > _download_value:
         
-        _download_value = _download_clicks
-        time_serial = cbyz.get_time_serial(with_time=True)
-        
-        # Convert nested dict to dataframe ......
-        results = pd.DataFrame()
-        
-        for i in _df_memory:
-            temp = pd.DataFrame(i)
-            results = results.append(temp)
-        
-        results.columns = ['Date', 'Value', 'Type', 'Word']
-        results = results[['Date', 'Word', 'Value']]
-
-        # Export ......        
-        send_frame = \
-            send_data_frame(results.to_excel, 
-                            "goole_trends_enhanced" + time_serial \
-                            + ".xlsx", index=False) 
+    time_serial = cbyz.get_time_serial(with_time=True)
     
-        return send_frame, _download_value
+    # Convert nested dict to dataframe ......
+    results = pd.DataFrame()
+
+    
+    # Prevent errors
+    if len(_df_memory[0]['date']) == 0:
+        raise PreventUpdate    
+    
+    
+    for i in _df_memory:
+        temp = pd.DataFrame(i)
+        results = results.append(temp)
+    
+    results.columns = ['Date', 'Value', 'Type', 'Word']
+    results = results[['Date', 'Word', 'Value']]
+ 
+    # Export ......        
+    send_frame = \
+        send_data_frame(results.to_excel, 
+                        "goole_trends_enhanced" + time_serial \
+                        + ".xlsx", index=False) 
+    
+    return send_frame
+    
 
 
 
