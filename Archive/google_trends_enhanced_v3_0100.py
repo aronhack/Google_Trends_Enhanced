@@ -96,19 +96,11 @@ def load_data(begin_date, end_date, words=[], debug=False):
 
 # %% Application ----
 
-
-
-# Date Picker Stuck issues
-# https://community.plotly.com/t/style-of-datepickerrange-seems-screwed-up-in-the-demo/22590
-
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
-                        ]
-
-
 # Iniitialize ......
-# app = dash.Dash()
-app = dash.Dash(external_stylesheets=external_stylesheets)
+external_stylesheets = [dbc.themes.BOOTSTRAP,
+                        'https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+app = dash.Dash(external_stylesheets=external_stylesheets)
 df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
 
 
@@ -137,10 +129,6 @@ btn_style = {
     'margin-bottom': '16px'
     }
 
-
-css_pythonanywhere = {
-    'text-align': 'center'
-    }
 
 
 app.layout = \
@@ -176,10 +164,11 @@ app.layout = \
         html.Div([html.Span(['Powered by ',
                             html.A('PythonAnywhere', 
                                    href='https://aronhack.studio/pythonanywhere_dash',
-                                   target='_blank')
+                                   target='_blank',
+                                   className='text-decoration-none')
                             ]),
                  ],
-                 style=css_pythonanywhere)
+                 className='text-center')
         
     ],  
 )
@@ -289,18 +278,25 @@ def donwload_file(_download_clicks, _df_memory):
     
 
 
+# %% Execute ------
+
 def version_note():
     '''
     主工作區
     '''
-    # v3.0000
+    # v3.0100
     # - Add PythonAnywhere affiliate link
+    # v3.0101
+    # - Replace Download with io
+    
     
     
     # Worklist
     # - DatePickerRange callback issues, 等選完後再callback，否則會stuck；
     #   現在是不得以才用with_portal
-    
+    # - Disable embeding
+    #  https://stackoverflow.com/questions/30717152/python-flask-how-to-set-response-header-for-all-responses
+    #  https://stackoverflow.com/questions/40937527/disable-iframe-embedding-for-other-websites
     
     pass
 
