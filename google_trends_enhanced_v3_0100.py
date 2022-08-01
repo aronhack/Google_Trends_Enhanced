@@ -14,9 +14,11 @@ Created on Sat Nov 14 17:48:32 2020
 import pandas as pd
 import sys
 import time
+from datetime import date
 
 import dash
 import dash_core_components as dcc
+import dash_bootstrap_components as dbc
 import dash_html_components as html
 # import dash_daq as daq
 from dash.dependencies import Input, Output, State
@@ -99,12 +101,14 @@ def load_data(begin_date, end_date, words=[], debug=False):
 # Date Picker Stuck issues
 # https://community.plotly.com/t/style-of-datepickerrange-seems-screwed-up-in-the-demo/22590
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css',
+                        ]
 
 
 # Iniitialize ......
 # app = dash.Dash()
 app = dash.Dash(external_stylesheets=external_stylesheets)
+
 df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
 
 
@@ -134,13 +138,22 @@ btn_style = {
     }
 
 
+css_pythonanywhere = {
+    'text-align': 'center'
+    }
+
+
 app.layout = \
     html.Div([
         html.Div(id='debug'),
         dcc.Store(id='df_memory', data=df_memory_dict),
 
-        dcc.DatePickerRange(id='calendar', display_format='Y-M-D', 
-                            with_portal=True, style=date_picker),
+        dcc.DatePickerRange(id='calendar', 
+                            start_date=date(2022, 1, 16),
+                            end_date=date(2022, 1, 20),                            
+                            display_format='Y-M-D', 
+                            with_portal=True, 
+                            style=date_picker),
         
         dcc.Input(id="word_input", type="text", 
                   placeholder="使用逗號分隔關鍵字，如「台股,美股,比特幣」",
@@ -158,7 +171,15 @@ app.layout = \
             id="loading-1",
             type="default",
             children=dcc.Graph(id="graph")
-        ),        
+        ),
+        
+        html.Div([html.Span(['Powered by ',
+                            html.A('PythonAnywhere', 
+                                   href='https://aronhack.studio/pythonanywhere_dash',
+                                   target='_blank')
+                            ]),
+                 ],
+                 style=css_pythonanywhere)
         
     ],  
 )
@@ -266,6 +287,22 @@ def donwload_file(_download_clicks, _df_memory):
     
     return send_frame
     
+
+
+def version_note():
+    '''
+    主工作區
+    '''
+    # v3.0000
+    # - Add PythonAnywhere affiliate link
+    
+    
+    # Worklist
+    # - DatePickerRange callback issues, 等選完後再callback，否則會stuck；
+    #   現在是不得以才用with_portal
+    
+    
+    pass
 
 
 
