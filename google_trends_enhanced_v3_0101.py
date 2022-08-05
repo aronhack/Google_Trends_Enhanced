@@ -145,6 +145,10 @@ btn_style = {
     'margin-bottom': '16px'
     }
 
+footer_style = {
+    'font-size':'14px'
+    }
+
 
 app.layout = \
     html.Div([
@@ -182,10 +186,19 @@ app.layout = \
                             html.A('PythonAnywhere', 
                                    href='https://aronhack.studio/pythonanywhere_dash',
                                    target='_blank',
-                                   className='text-decoration-none')
+                                   className='text-decoration-none'),
+                            ' - '
                             ]),
+                  html.Span(['© 2022 ',
+                            html.A('ARON HACK 亞倫害的.', 
+                                   href='https://aronhack.studio/aronhack_dash_footer',
+                                   target='_blank',
+                                   className='text-decoration-none'),
+                            ' All Rights Reserved'],
+                            className=''),
                  ],
-                 className='text-center')
+                 className='text-center',
+                 style=footer_style)
         
     ],  
 )
@@ -303,8 +316,9 @@ def version_note():
     # v3.0101
     # - Replace Download with new function
     # - Replace input as textarea, and split by enter
-    # - Add X-Frame-Options
-    
+    # - Add all rights reserved
+    # - Give up to add X-Frame-Options, but add affiliate link to the footer 
+    #   of dashboards.
     
     # Worklist
     # - Disable embeding
