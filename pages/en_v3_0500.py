@@ -115,11 +115,10 @@ layout = html.Div([
             html.Div(html.A(html.Img(src=ah_logo,
                                       style={'width':'110px'},
                                       className='my-4 ',),
-                            href='https://trends.aronhack.com/',
+                            href=dictionary['Home'][lang],
                             ),
                       className='col-6'
                       ),
-            
             
             
             html.Div(html.Nav([html.A(dictionary['Home'][lang], 

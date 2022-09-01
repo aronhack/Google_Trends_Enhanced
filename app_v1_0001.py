@@ -256,6 +256,7 @@ def version_note():
     # Note
     # - 把zh的callback加進去後會stuck，可能是因為是用id，所以en的callback也對zh有用
     # - Modify for zh verion
+    #   - Fix on en version
     #   - Comment callback
     #   - change the lang
         
