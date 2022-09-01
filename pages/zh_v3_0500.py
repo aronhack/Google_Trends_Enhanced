@@ -1,33 +1,5 @@
 
 
-import dash
-from dash import html, dcc, callback, Input, Output
-
-dash.register_page(__name__, path='/zh')
-
-layout = html.Div(children=[
-    html.H1(children='This is our Analytics page'),
- 	html.Div([
-        "Select a city: ",
-        dcc.RadioItems(['New York City', 'Montreal','San Francisco'],
-        'Montreal',
-        id='analytics-input')
-    ]),
- 	html.Br(),
-    html.Div(id='analytics-output'),
-])
-
-
-@callback(
-    Output(component_id='analytics-output', component_property='children'),
-    Input(component_id='analytics-input', component_property='value')
-)
-def update_city_selected(input_value):
-    return f'You selected: {input_value}'
-
-
-
-
 
 
 # -*- coding: utf-8 -*-
@@ -37,20 +9,23 @@ import time
 from datetime import date
 
 import dash
-import dash_core_components as dcc
 import dash_bootstrap_components as dbc
-import dash_html_components as html
-from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
-
 import plotly.graph_objs as go
-from dash import html, dcc, callback, Input, Output
-
-
-import dash
-from dash import html, dcc
+from dash import html, dcc, callback, Input, Output, State
 
 import codebase_yz as cbyz
+
+lang = 1
+
+
+if lang == 0:
+    dash.register_page(__name__, path='/')
+elif lang == 1:
+    dash.register_page(__name__, path='/zh')
+
+# dash.register_page(__name__, path='/')
+# dash.register_page(__name__, path='/zh')
 
 
 
@@ -77,9 +52,7 @@ def load_data(begin_date, end_date, words=[], debug=False):
 
 # %% Dictdionnay
 
-lang = 1
 dictionary = {}
-
 dictionary['aronhack'] = ['ARON HACK',
                           'ARON HACK 亞倫害的']
 dictionary['title'] = ['Google Trends Enhanced',
@@ -89,8 +62,14 @@ dictionary['Keywords'] = ['Input Keywords', '輸入關鍵字']
 dictionary['Search'] = ['Search', '搜尋']
 dictionary['Download'] = ['Download', '下載']
 dictionary['Home'] = ['Home', '首頁']
-dictionary['Documentation'] = ['Documentation', '說明']
+dictionary['home_link'] = ['https://aronhack.com/', 
+                           'https://aronhack.com/zh/home-zh/']
 
+dictionary['Documentation'] = ['Documentation', '說明']
+dictionary['doc_link'] = ['https://aronhack.com/zh/google-trends-enhanced-guide/', 
+                          'https://aronhack.com/zh/google-trends-enhanced-guide-zh/']
+
+dictionary['Language'] = ['Language', '語言']
 
 
 df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
@@ -109,7 +88,8 @@ colors = {
 word_input_style = {
     'height': '35px',
     'display': 'block',
-    'margin': '16px 0'
+    'margin': '16px 0',
+    'font-size': '16px'
     }
 
 btn_style = {
@@ -127,6 +107,9 @@ ah_logo = r'https://aronhack.com/wp-content/themes/aronhack/assets/header/logo_v
 
 layout = html.Div([
     
+    html.Div(id="debug"),
+    dcc.Location(id='url'),
+    
     html.Div( 
         html.Div([
             html.Div(html.A(html.Img(src=ah_logo,
@@ -137,12 +120,14 @@ layout = html.Div([
                       className='col-6'
                       ),
             
+            
+            
             html.Div(html.Nav([html.A(dictionary['Home'][lang], 
                                       className="nav-item nav-link text-dark",
-                                      href='https://aronhack.com/zh/home-zh/'),
+                                      href=dictionary['home_link'][lang]),
                                 html.A(dictionary['Documentation'][lang], 
                                       className="nav-item nav-link text-dark", 
-                                      href='https://aronhack.com/zh/google-trends-enhanced-guide-zh/')
+                                      href=dictionary['doc_link'][lang])
                                 ],
                               className = 'nav nav-pills ', 
                 ),
@@ -199,37 +184,50 @@ layout = html.Div([
         children=dcc.Graph(id="graph")
     ),
     
-    html.Div([html.Span(['Powered by ',
+    html.Div(
+        [html.Div(dcc.Dropdown(
+                    id='lang_dropdown',
+                    placeholder=dictionary['Language'][lang],
+                    options=[{'label': 'English', 'value': ''},
+                             {'label': '正體中文', 'value': 'zh'}],
+                    style={'width':'150px'}
+                    # style=word_input_style,
+                    # className='col-12 col-sm-12 col-md-6',
+                    ),  
+                    className='col-3'),            
+        html.Div(
+                [html.Span(['Powered by ',
                         html.A('PythonAnywhere', 
-                                href='https://aronhack.studio/pythonanywhere_dash',
-                                target='_blank',
-                                className='text-decoration-none'),
+                               href='https://aronhack.studio/pythonanywhere_dash',
+                               target='_blank',
+                               className='text-decoration-none'),
                         ' - '
                         ]),
-              html.Span(['© 2022 ',
+             html.Span(['© 2022 ',
                         html.A(dictionary['aronhack'][lang] + '.', 
-                                href='https://aronhack.studio/aronhack_dash_footer',
-                                target='_blank',
-                                className='text-decoration-none'),
-                        ' All Rights Reserved'],
-                        className=''),
+                               href='https://aronhack.studio/aronhack_dash_footer',
+                               target='_blank',
+                               className='text-decoration-none'),
+                    ' All Rights Reserved'],
+                       className=''),
               ],
-              className='text-center',
+               # className='text-center',
+              className='col-6 d-flex align-items-center',
               style=footer_style),
+        
+        html.Div(className='col-3'),          
+            ],
+        className='row',
+        ),
     
-    dcc.Dropdown(
-        id='lang_dropdown',
-        options=['正體中文', 'English'],
-        # style=word_input_style,
-        # className='col-12 col-sm-12 col-md-6',
-        ),        
-    ],  
+    ],
+    id='container',
     className='p-4',
 )
 
 
 
-# %% Callback ------
+# # %% Callback ------
 
 # @dash.callback(
 #     Output('dropdown', 'options'),
@@ -239,15 +237,23 @@ layout = html.Div([
 
 # def callback_fun(new_value, cur_options):
     
+#     print('Is it possible to detect press Enter in the input')
+    
 #     if not new_value or new_value in cur_options:
 #         return cur_options
+    
+#     print(new_value)
+#     if new_value == '1':
+#         global lang
+#         lang = 1
+#         print('lang = 1')
+    
 
 #     cur_options.append({'label': new_value, 'value': new_value})
 #     return cur_options
 
 
-
-# @callback(
+# @dash.callback(
 #     Output('graph', 'figure'),
 #     Output('df_memory', 'data'),
 #     Input('submit_btn', 'n_clicks'),
@@ -260,7 +266,7 @@ layout = html.Div([
 # def update_output(_submit_clicks, begin_date, end_date, words):
     
     
-#     if begin_date == None or end_date == None or len(words) == 0:    
+#     if begin_date == None or end_date == None or words == None:
 #         raise PreventUpdate
 
 
@@ -300,7 +306,7 @@ layout = html.Div([
 # # .................
 
 
-# @callback(
+# @dash.callback(
 #     Output('download', 'data'),
 #     Input('download_btn', 'n_clicks'),
 #     State('df_memory', 'data'),
@@ -338,4 +344,15 @@ layout = html.Div([
 #     return send_frame
 
 
+# @dash.callback(
+#     Output('url', 'pathname'),
+#     Input('lang_dropdown', 'value'), 
+#     State('url', 'pathname'),
+# )
+
+# def lang(lang_option, url_value):
+#     if lang_option != None:
+#         return '/' + lang_option
+#     else:
+#         return url_value
 
