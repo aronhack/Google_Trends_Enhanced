@@ -18,7 +18,6 @@ import sys
 import os
 
 import dash
-import dash_core_components as dcc
 import dash_bootstrap_components as dbc
 from dash import html
 from dash.exceptions import PreventUpdate

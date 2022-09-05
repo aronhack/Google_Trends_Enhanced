@@ -15,17 +15,49 @@ import plotly.graph_objs as go
 from dash import html, dcc, callback, Input, Output, State
 
 import codebase_yz as cbyz
-
 lang = 0
 
 
-if lang == 0:
-    dash.register_page(__name__, path='/')
-elif lang == 1:
-    dash.register_page(__name__, path='/zh')
 
-# dash.register_page(__name__, path='/')
-# dash.register_page(__name__, path='/zh')
+# %% Dictdionnay
+
+dictionary = {}
+dictionary['aronhack'] = ['ARON HACK',
+                          'ARON HACK 亞倫害的']
+dictionary['title'] = ['Google Trends Enhanced',
+                        'Google Trends Enhanced 搜尋趨勢分析威力加強版']
+
+dictionary['description'] = ['Whether you apply Google Trends through the website or writing a program to call the API, as long as you use the service of Google Trends, you can only search for up to five keywords at a time. This is a restriction set by Google and cannot be changed. Then why can the Google Trends Enhanced search multiple keywords at once? The task Google Trends Enhanced does is to group all keywords, obtain each search interest, then merge the data, and export it into a Excel file.',
+                             '不論你是使用網頁版的Google Trends，或是寫程式呼叫API，只要你使用Google Trends的服務，一次最多只能搜尋五組關鍵字。這是Google設下的限制，沒辦法更動。那為什麼威力加強版可以一次搜尋多組關鍵字？實際上，威力加強版執行的任務是將所有關鍵字分組，分別取得每一次的搜尋熱度後再合併資料，並且匯出成Excel檔。']
+
+
+dictionary['keywords'] = ['Input A Keyword, Then Press Enter.',
+                          '輸入關鍵字後按Enter']
+dictionary['search'] = ['Search', '搜尋']
+dictionary['download'] = ['Download', '下載']
+dictionary['home'] = ['Home', '首頁']
+dictionary['home_link'] = ['https://aronhack.com/', 
+                           'https://aronhack.com/zh/home-zh/']
+
+dictionary['documentation'] = ['Documentation', '說明']
+dictionary['doc_link'] = ['https://aronhack.com/zh/google-trends-enhanced-guide/', 
+                          'https://aronhack.com/zh/google-trends-enhanced-guide-zh/']
+
+dictionary['language'] = ['Language', '語言']
+
+
+df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
+
+
+# ..............
+
+
+if lang == 0:
+    dash.register_page(__name__, title=dictionary['title'][lang],
+                       description=dictionary['description'][lang], path='/')
+elif lang == 1:
+    dash.register_page(__name__, title=dictionary['title'][lang],
+                       description=dictionary['description'][lang], path='/zh')
 
 
 
@@ -48,33 +80,6 @@ def load_data(begin_date, end_date, words=[], debug=False):
         
         return trend_words, trend_data
         
-
-
-# %% Dictdionnay
-
-dictionary = {}
-dictionary['aronhack'] = ['ARON HACK',
-                          'ARON HACK 亞倫害的']
-dictionary['title'] = ['Google Trends Enhanced',
-                        'Google Trends Enhanced 搜尋趨勢分析威力加強版']
-
-dictionary['Keywords'] = ['Input Keywords', '輸入關鍵字']
-dictionary['Search'] = ['Search', '搜尋']
-dictionary['Download'] = ['Download', '下載']
-dictionary['Home'] = ['Home', '首頁']
-dictionary['home_link'] = ['https://aronhack.com/', 
-                           'https://aronhack.com/zh/home-zh/']
-
-dictionary['Documentation'] = ['Documentation', '說明']
-dictionary['doc_link'] = ['https://aronhack.com/zh/google-trends-enhanced-guide/', 
-                          'https://aronhack.com/zh/google-trends-enhanced-guide-zh/']
-
-dictionary['Language'] = ['Language', '語言']
-
-
-df_memory_dict = pd.DataFrame({'DATE':[], 'VALUE':[]}).to_dict()
-
-
 
 
 # %% Style ------
@@ -115,16 +120,16 @@ layout = html.Div([
             html.Div(html.A(html.Img(src=ah_logo,
                                       style={'width':'110px'},
                                       className='my-4 ',),
-                            href=dictionary['Home'][lang],
+                            href=dictionary['home'][lang],
                             ),
                       className='col-6'
                       ),
             
             
-            html.Div(html.Nav([html.A(dictionary['Home'][lang], 
+            html.Div(html.Nav([html.A(dictionary['home'][lang], 
                                       className="nav-item nav-link text-dark",
                                       href=dictionary['home_link'][lang]),
-                                html.A(dictionary['Documentation'][lang], 
+                                html.A(dictionary['documentation'][lang], 
                                       className="nav-item nav-link text-dark", 
                                       href=dictionary['doc_link'][lang])
                                 ],
@@ -158,19 +163,19 @@ layout = html.Div([
     
     dcc.Dropdown(
         id='dropdown',
-        placeholder=dictionary['Keywords'][lang],
+        placeholder=dictionary['keywords'][lang],
         options=[],
         style=word_input_style,
         className='col-12 col-sm-12 col-md-6',
         multi=True
     ),    
     
-    html.Button(dictionary['Search'][lang],
+    html.Button(dictionary['search'][lang],
                 id='submit_btn', 
                 n_clicks=0, value=0,
                 style=btn_style),
     
-    html.Button(dictionary['Download'][lang],
+    html.Button(dictionary['download'][lang],
                 id='download_btn', 
                 n_clicks=0, value=0,
                 style=btn_style),
@@ -186,7 +191,7 @@ layout = html.Div([
     html.Div(
         [html.Div(dcc.Dropdown(
                     id='lang_dropdown',
-                    placeholder=dictionary['Language'][lang],
+                    placeholder=dictionary['language'][lang],
                     options=[{'label': 'English', 'value': ''},
                              {'label': '正體中文', 'value': 'zh'}],
                     style={'width':'150px'}
@@ -211,7 +216,7 @@ layout = html.Div([
                        className=''),
               ],
                # className='text-center',
-              className='col-6 d-flex align-items-center',
+              className='col-6 d-flex align-items-center justify-content-center',
               style=footer_style),
         
         html.Div(className='col-3'),          
