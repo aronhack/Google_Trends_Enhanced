@@ -157,37 +157,7 @@ app.index_string = '''
     </head>
     <body>
 
-        <div align="center" class="mt-4">
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3866010510626398"
-                  crossorigin="anonymous"></script>
-            <!-- Trends Display Ad -->
-            <ins class="adsbygoogle"
-                  style="display:block"
-                  data-ad-client="ca-pub-3866010510626398"
-                  data-ad-slot="5582539449"
-                  data-ad-format="auto"
-                  data-full-width-responsive="true"></ins>
-            <script>
-                  (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>    
-        </div>
-
         {%app_entry%}
-
-        <div align="center" class="mb-4">
-            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3866010510626398"
-                  crossorigin="anonymous"></script>
-            <!-- Trends Display Ad -->
-            <ins class="adsbygoogle"
-                  style="display:block"
-                  data-ad-client="ca-pub-3866010510626398"
-                  data-ad-slot="5582539449"
-                  data-ad-format="auto"
-                  data-full-width-responsive="true"></ins>
-            <script>
-                  (adsbygoogle = window.adsbygoogle || []).push({});
-            </script>  
-        </div>
 
         <footer>
             {%config%}
@@ -198,6 +168,38 @@ app.index_string = '''
 </html>
 '''
 
+
+# 20221011 - Remove header ads
+# <div align="center" class="mt-4">
+#     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3866010510626398"
+#           crossorigin="anonymous"></script>
+#     <!-- Trends Display Ad -->
+#     <ins class="adsbygoogle"
+#           style="display:block"
+#           data-ad-client="ca-pub-3866010510626398"
+#           data-ad-slot="5582539449"
+#           data-ad-format="auto"
+#           data-full-width-responsive="true"></ins>
+#     <script>
+#           (adsbygoogle = window.adsbygoogle || []).push({});
+#     </script>    
+# </div>
+
+
+# <div align="center" class="mb-4">
+#     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3866010510626398"
+#           crossorigin="anonymous"></script>
+#     <!-- Trends Display Ad -->
+#     <ins class="adsbygoogle"
+#           style="display:block"
+#           data-ad-client="ca-pub-3866010510626398"
+#           data-ad-slot="5582539449"
+#           data-ad-format="auto"
+#           data-full-width-responsive="true"></ins>
+#     <script>
+#           (adsbygoogle = window.adsbygoogle || []).push({});
+#     </script>  
+# </div>
 
 
 
@@ -228,29 +230,16 @@ def version_note():
     '''
     主工作區
     '''
-    # v3.0100
-    # - Add PythonAnywhere affiliate link
-    # v3.0101
-    # - Replace Download with new function
-    # - Replace input as textarea, and split by enter
-    # - Add all rights reserved
-    # - Give up to add X-Frame-Options, but add affiliate link to the footer 
-    #   of dashboards.
-    # v3.0200
-    # - Redirection versoin
-    # - Add Adsense code
-    # v3.0300
-    # - Replace input with dropdown
-    # v3.0400
-    # - Add GA4
-    # v3.0500
-    # - Add multilingual
-    #   https://community.plotly.com/t/create-multi-language-app-en-de-es/59875
-    # - Add lang_dropdown callback
+    
+    # v1.0001
+    
+    
+    # Bug
+    # - Not Found
+    #   The requested URL was not found on the server. If you entered the URL manually please check your spelling and try again.
 
 
-    # Change the name
-    # dash.register_page(__name__, path='/')
+
 
     # Note
     # - 把zh的callback加進去後會stuck，可能是因為是用id，所以en的callback也對zh有用

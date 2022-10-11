@@ -68,9 +68,7 @@ def load_data(begin_date, end_date, words=[], debug=False):
     
     words = cbyz.conv_to_list(words)
     
-
     # Pytrend .....
-    
     if debug == False:
         trend_words = words
         trend_data = cbyz.pytrends_multi(begin_date=begin_date, 
