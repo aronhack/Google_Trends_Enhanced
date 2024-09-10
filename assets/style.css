@@ -1,0 +1,14 @@
+
+
+
+#dropdown .Select-menu-outer{
+  display: none !important;
+  font-size: 30px !important;
+  background-color: #000000;
+}
+
+
+
+#dropdown{
+  font-size: 30px;
+}

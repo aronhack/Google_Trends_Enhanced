@@ -17,7 +17,7 @@ import datetime
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
-import dash_daq as daq
+# import dash_daq as daq
 from dash.dependencies import Input, Output
 
 
@@ -29,6 +29,8 @@ from dash_extensions.snippets import send_data_frame
 # from flask import Flask, request
 from flask_caching import Cache
 
+
+# from pytrends.request import TrendReq
 
 
 local = False
@@ -45,7 +47,8 @@ else:
 
 # Codebase ......
 path_codebase = [r'/Users/Aron/Documents/GitHub/Arsenal/',
-                 r'/Users/Aron/Documents/GitHub/Codebase_YZ']
+                 r'/Users/Aron/Documents/GitHub/Codebase_YZ',
+                 path + '/Function']
 
 
 for i in path_codebase:    
@@ -71,7 +74,7 @@ path_export = path + '/Export'
 
 
 cbyz.os_create_folder(path=[path_resource, path_function, 
-                         path_temp, path_temp_user, path_export])
+                            path_temp, path_temp_user, path_export])
 
 
 
@@ -126,7 +129,6 @@ def check():
 
 
 
-
 # %% Application ----
 
 master()
@@ -153,15 +155,21 @@ colors = {
 file_path = path_temp_user + '/file_20210607_221318.csv'
 
 
+date_picker = {
+    'display': 'black'    
+}
+
+
 app.layout = \
     html.Div([
         html.Div(id='debug'),
-        dcc.DatePickerRange(id='calendar', display_format='Y-M-D'),        
+
+        dcc.DatePickerRange(id='calendar', display_format='Y-M-D', 
+                            style=date_picker),
         dcc.Input(id="word_input", type="text", placeholder=""),
-        html.Button('Submit', id='submit_btn', n_clicks=0),
+        html.Button('查詢', id='submit_btn', n_clicks=0),
         
-        
-        html.Button('Download', id='download_btn', n_clicks=0),   
+        html.Button('下載', id='download_btn', n_clicks=0),   
         Download(id="download"),
         
         
@@ -186,8 +194,7 @@ app.layout = \
 
 def update_output(begin_date, end_date, words, _submit_clicks):
 
-    # 1. Loading 
-
+    # 1. Add Loading icon
     
     
     global trend_data, trend_wods, submit_clicks
@@ -251,7 +258,7 @@ def update_output(begin_date, end_date, words, _submit_clicks):
     # debug_dropdown = '_'.join(dropdown_value)
 
 
-    return figure, words
+    return figure, ''
 
 
 
